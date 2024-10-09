@@ -16,5 +16,6 @@ const logger = require("firebase-functions/logger");
 
 exports.helloWorld = onRequest((request, response) => {
   logger.info("Hello logs!", {structuredData: true});
+  logger.debug('hiiiiiii')
   response.send("Hello from Firebase!");
 });
