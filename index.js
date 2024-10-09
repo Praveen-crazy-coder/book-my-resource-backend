@@ -1,11 +1,12 @@
 const express = require('express');
 const admin = require('firebase-admin');
 var serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT);
+const cors = require('cors');
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://book-my-resource-6d610-default-rtdb.firebaseio.com/' // Replace with your database URL
+    databaseURL: 'https://book-my-resource-6d610-default-rtdb.firebaseio.com/'
 });
 
 // Initialize the database
@@ -16,39 +17,45 @@ const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors(
+    {
+        origin: ('http://localhost:3000' || 'https://book-my-resource.web.app')
+    }
+))
+
 
 /**
  * API routes
  */
-const usersRef = db.ref("resources");
-
-// Route to add a new resource
-app.post('/resources', (req, res) => {
-    const { name, email } = req.body; // Get name and email from request body
-
-    // Generate a unique key by creating a new child under 'resources'
-    const newUserRef = usersRef.push(); // This generates a unique key
-
-    // Set data at the new reference
-    newUserRef.set({
-        name,
-        email
-    }).then(() => {
-        res.status(201).json({ message: 'Resource added successfully', id: newUserRef.key });
-    }).catch((error) => {
-        console.error("Error saving resource data:", error);
-        res.status(500).json({ error: error.message });
-    });
-});
+const resourcesRef = db.ref("resources");
 
 // Route to get all resources
 app.get('/resources', (req, res) => {
-    usersRef.once('value', (snapshot) => {
-        res.status(200).json(snapshot.val());
+    resourcesRef.once('value', (snapshot) => {
+        const resources = snapshot.val();
+        const resourcesWithIds = Object.keys(resources || {}).map((key, index) => {
+            return { ...resources[key], id: index + 1 };
+        });
+        res.status(200).json(resourcesWithIds);
     }, (error) => {
         res.status(500).json({ error: error.message });
     });
 });
+
+app.post('/create-resource', (req, res) => {
+    const { name } = req.body;
+
+    const newResourcesRef = resourcesRef.push();
+
+    newResourcesRef.set({
+        name
+    }).then(() => {
+        res.status(201).json({})
+    }).catch((error) => {
+        console.error("Error creating resource:", error);
+        res.status(500).json({ error: error.message });
+    });
+})
 
 /**
  * Start the server
