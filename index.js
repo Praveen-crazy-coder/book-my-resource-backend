@@ -44,7 +44,7 @@ app.post('/resources', (req, res) => {
 // Route to get all resources
 app.get('/resources', (req, res) => {
     usersRef.once('value', (snapshot) => {
-        res.status(200).json(snapshot.val());
+        res.status(200).json({hello: 'praveen'});
     }, (error) => {
         res.status(500).json({ error: error.message });
     });
