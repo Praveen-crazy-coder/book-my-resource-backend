@@ -17,13 +17,9 @@ const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
-app.use(cors(
-    {
-        origin: ('http://localhost:3000' || 'https://book-my-resource.web.app')
-    }
-))
-
-
+app.use(cors({
+    origin: ['http://localhost:3000', 'https://book-my-resource.web.app']
+}));
 /**
  * API routes
  */
