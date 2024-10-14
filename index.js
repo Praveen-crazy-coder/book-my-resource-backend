@@ -91,15 +91,38 @@ app.post('/book-resource', (req, res) => {
 })
 
 app.get('/bookings', (req, res) => {
+    const page = parseInt(req.query.page, 10) || 1; // Pagination page
+    const limit = parseInt(req.query.limit, 10) || 5; // Number of items per page
+    const offset = (page - 1) * limit; // Compute the offset
+
     bookingRef.once('value', (snapshot) => {
-        const bookings = snapshot.val()
-        res.status(200).json(bookings)
+        const bookingsVal = snapshot.val();
+        const allBookings = Object.keys(bookingsVal || {}).filter(key => key !== 'counter') // Exclude the 'counter' key
+            .map((key) => {
+                return {...bookingsVal[key], id: key};
+            });
+
+        // Get the bookings for the current page
+        const paginatedBookings = allBookings.slice(offset, offset + limit);
+
+        res.status(200).json(paginatedBookings);
     }, (error) => {
         res.status(500).json({error: error.message});
     })
-})
+});
 
-//
+app.delete('/book-resource/:id', (req, res) => {
+    const id = req.params.id;
+
+    bookingRef.child(id).remove()
+        .then(() => {
+            res.status(200).json({ message: 'Booking deleted successfully' })
+        })
+        .catch((error) => {
+            console.error("Error deleting booking:", error);
+            res.status(500).json({ error: error.message });
+        });
+});
 
 /**
  * Start the server
