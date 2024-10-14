@@ -15,6 +15,6 @@ const logger = require("firebase-functions/logger");
 // https://firebase.google.com/docs/functions/get-started
 
 exports.helloWorld = onRequest((request, response) => {
-  logger.info("Hello logs!", {structuredData: true});
+  logger.info("Hello here logs!", {structuredData: true});
   response.send("Hello from Firebase!");
 });
